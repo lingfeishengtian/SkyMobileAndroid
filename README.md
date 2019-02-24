@@ -1,4 +1,5 @@
 # SkyMobileAndroid_Private
-SkyMobile for android!
+SkyMobile for android! @FuryOne7 developing help!
 
-#Current State: WIP
+# Current State: WIP
+- 2% Finished
