@@ -10,15 +10,12 @@ import android.os.Message
 import android.support.v7.app.AppCompatActivity
 import android.util.TypedValue
 import android.view.ViewGroup
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.LinearLayout
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_skyward_login.*
 import java.lang.Exception
-
+import android.os.Build
+import android.webkit.*
 
 
 /**
@@ -39,29 +36,33 @@ class SkywardLoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         Skyward.loadUrl("https://skyward-fbprod.iscorp.com/scripts/wsisa.dll/WService=wsedufortbendtx/seplog01.w")
         Skyward.settings.javaScriptEnabled = true
         Skyward.settings.javaScriptCanOpenWindowsAutomatically = true
-        Skyward.settings.setSupportMultipleWindows(false)
+        Skyward.settings.setSupportMultipleWindows(true)
 
-        Skyward.webChromeClient = object: WebChromeClient() {
+        Skyward.webChromeClient = object : WebChromeClient() {
+
             override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
-                println("SDFSDFSD")
-                val viewParent = view!!.parent as ViewGroup
-                viewParent.removeView(view)
-                viewParent.layoutParams = parentView.layoutParams
-                email_login_form.addView(view)
-                view.evaluateJavascript("document.body.innerHTML"){it
-                    println(it)
+                var newWebView = WebView(applicationContext);
+                newWebView.getSettings().setJavaScriptEnabled(true);
+                newWebView.getSettings().setSupportZoom(true);
+                newWebView.getSettings().setBuiltInZoomControls(true);
+                newWebView.getSettings().setSupportMultipleWindows(true);
+                view!!.addView(newWebView);
+                var transport = resultMsg!!.obj as WebView.WebViewTransport
+                transport.setWebView(newWebView);
+                resultMsg.sendToTarget();
+
+                newWebView.webViewClient = object: WebViewClient() {
+                    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                        view!!.loadUrl(request!!.url.toString(), request!!.requestHeaders)
+                        println(request!!.url.toString())
+                        view!!.evaluateJavascript("document.body.outerHTML"){it
+                        println(it)
+                        }
+                        return true;
+                    }
                 }
-                println(view.url.toString())
-                return true
-            }
-        };
 
-
-        Skyward.webViewClient = object : WebViewClient() {
-
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                println("WHYKFJLSDKF")
-                return super.shouldOverrideUrlLoading(view, request)
+                return true;
             }
         }
 
@@ -113,4 +114,5 @@ class SkywardLoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     override fun onLoaderReset(p0: Loader<Cursor>?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
 }
