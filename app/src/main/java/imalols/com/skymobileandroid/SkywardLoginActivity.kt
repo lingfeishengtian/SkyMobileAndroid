@@ -6,9 +6,11 @@ import android.content.Loader
 import android.database.Cursor
 import android.graphics.Typeface
 import android.os.Bundle
+import android.os.Message
 import android.support.v7.app.AppCompatActivity
 import android.util.TypedValue
 import android.view.ViewGroup
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -16,6 +18,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_skyward_login.*
 import java.lang.Exception
+
+
 
 /**
  * A login screen that offers login via email/password.
@@ -28,14 +32,38 @@ class SkywardLoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         println("HEHLELELO")
         setContentView(R.layout.activity_skyward_login)
 
-        val Skyward = WebView(this)
+        var Skyward = WebView(this)
 
         Skyward.layoutParams = parentView.layoutParams
         email_login_form.addView(Skyward)
         Skyward.loadUrl("https://skyward-fbprod.iscorp.com/scripts/wsisa.dll/WService=wsedufortbendtx/seplog01.w")
         Skyward.settings.javaScriptEnabled = true
         Skyward.settings.javaScriptCanOpenWindowsAutomatically = true
-        Skyward.settings.setSupportMultipleWindows(true)
+        Skyward.settings.setSupportMultipleWindows(false)
+
+        Skyward.webChromeClient = object: WebChromeClient() {
+            override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
+                println("SDFSDFSD")
+                val viewParent = view!!.parent as ViewGroup
+                viewParent.removeView(view)
+                viewParent.layoutParams = parentView.layoutParams
+                email_login_form.addView(view)
+                view.evaluateJavascript("document.body.innerHTML"){it
+                    println(it)
+                }
+                println(view.url.toString())
+                return true
+            }
+        };
+
+
+        Skyward.webViewClient = object : WebViewClient() {
+
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                println("WHYKFJLSDKF")
+                return super.shouldOverrideUrlLoading(view, request)
+            }
+        }
 
         email_sign_in_button.setOnClickListener{
             AttemptLoginToSkyward(username.text.toString(), password.text.toString())
